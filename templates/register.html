@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/static/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/my_style.css">
+    <script src="/static/jquery-3.3.1.js"></script>
+    <script src="/static/bootstrap/js/bootstrap.min.js"></script>
+    <title>用户注册</title>
+</head>
+<body>
+<div class="container">
+    <div class="row col-md-6 col-md-offset-3 register-count" style="padding-top: 20px;margin-top:20px;">
+
+
+        <div class="panel panel-success">
+            <div class="panel-heading">
+                <h3 class="panel-title">新用户注册</h3>
+            </div>
+            <div class="panel-body" style="margin: 20px;">
+
+                <div class="form-group">
+                    <label for="username">用户名</label>
+                    <input type="text" class="form-control" id="username" placeholder="请输入用户名">
+                    <span></span>
+                </div>
+                <div class="form-group">
+                    <label for="email">邮箱</label>
+                    <input type="email" class="form-control" id="email" placeholder="请输入邮箱"><span></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">密码</label>
+                    <input type="password" class="form-control" id="password" placeholder="请输入密码"><span></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="re-password">确认密码</label>
+                    <input type="password" class="form-control" id="re-password" placeholder="请确认密码"><span></span>
+                </div>
+                <label for="auto-code">输入验证码</label>
+                <div class="form-inline">
+
+                    <input style="width: 60%" type="text" class="form-control" id="auth-code" placeholder="输入验证码">
+
+                    <img style="width:37%;margin-left:10px;height:30px;" src="/index/get_code/" alt="" onclick="get_code(this)">
+                    <span></span>
+                </div>
+                <button style="width:100%;margin-top:20px;" type="button" class="btn btn-success" id="btn">提交注册</button><span></span>
+                <a href="/index/login" class="hide" id="login">点击登陆</a>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    //刷新验证码
+    function get_code(ths) {
+        ths.src = ths.src+"?"
+    }
+    var cuser = false;
+    var cpwd = false;
+    var cverify = false;
+    //检查验证码是否输入正确
+    $("#auth-code").on("blur",function () {
+        var code = $(this).val();
+        if(code !==null){
+            $.ajax({
+                url:'/index/check_code/',
+                type:'get',
+                data:{
+                    "code":code,
+                },
+                success:function (data) {
+                    if(data.status){
+                        cverify = true;
+                    }else{
+                       $("#auth-code").parent().children("span").text(data.msg);
+                      //console.log(data);
+                    }
+                }
+            })
+        }
+    });
+    //用户名输入完成光标移开之后，需要把用户名发到后台做验证，看是不是已经存在
+    $("#username").on("blur", function () {
+        var username = $(this).val();
+        $.ajax({
+            url: "/index/check_user/",
+            type: "post",
+            data: {
+                "username": username
+            },
+            success: function (data) {
+                if (data.status) {
+                    $("#username").next("span").text(data.msg).parent().addClass("has-error");
+                } else {
+                    $("#username").next("span").text(data.msg);
+                    cuser = true;
+                }
+            }
+        })
+    });
+    //给input框绑定聚焦事件
+    $("input").on("focus", function () {
+        $(this).next("span").text("").parent().removeClass("has-error");
+    });
+    //检查两次密码是否一致
+    $("#re-password").on("blur",function () {
+        var pwd = $("#re-password");
+        var password = $("#password").val();
+        var re_password = pwd.val();
+        if(password!==re_password){
+            pwd.next("span").text("两次密码输入不一致！").parent().addClass("has-error");
+        }else{
+            cpwd = true;
+        }
+    });
+    //给button按钮绑定事件
+    $("#btn").on("click",function () {
+        if(cpwd&&cuser&&cverify){
+         var username = $("#username").val();
+         var password = $("#password").val();
+         var email = $("#email").val();
+            $.ajax({
+                url:"/index/register/",
+                type:"post",
+                data:{
+                    "username":username,
+                    "password":password,
+                    "email":email
+                },
+                success:function (data) {
+                    $("#btn").next().text(data.msg);
+                    $("#login").removeClass("hide");
+                }
+            })
+        }
+    })
+</script>
+</body>
+</html>

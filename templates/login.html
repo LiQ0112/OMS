@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>欢迎登陆</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="/static/jquery-3.3.1.js"></script>
+</head>
+<body>
+<div class="login-box">
+    <h2>报障系统</h2>
+    <form class="formWrapper" action="" method="post">
+        {% csrf_token %}
+        <div class="login-field">
+            <input type="text" id="username" name="username" required="" placeholder="请输入用户名"/>
+            <label><img src="/static/img/user.png"/></label>
+        </div>
+        <div class="login-field">
+            <input type="password" id="password" name="password" required="" placeholder="请输入密码"/>
+            <label><img src="/static/img/password.png"/></label>
+        </div>
+        <div class="login-field">
+            <span style="color:red"></span>
+            <button id="logbtn" type="button" class="login">登录</button>
+            <span>没有用户名？<a href="/index/register/">点击注册</a></span>
+
+        </div>
+    </form>
+</div>
+<script type="text/javascript">
+    $("#logbtn").on("click", function () {
+        var username = $("#username").val();
+        var password = $("#password").val();
+        $.ajax({
+            url:"/index/login/",
+            type:"post",
+            data:{
+                "username":username,
+                "password":password,
+            },
+            success:function (data) {
+                if(data.status){
+                    $("#logbtn").prev().text(data.msg)
+                }else{
+                    console.log(21);
+                    location.href = data.msg;
+                }
+            }
+        })
+    });
+    $("input").on("focus",function () {
+        $("#logbtn").prev().text("");
+    })
+</script>
+</body>
+</html>
